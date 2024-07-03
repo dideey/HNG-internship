@@ -1,8 +1,5 @@
 from flask import Flask, request, jsonify
 import requests
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
 app = Flask(__name__)
 
@@ -12,10 +9,8 @@ def hello():
     visitor_name = request.args.get('visitor_name', 'Guest')
     print(visitor_name)
     
-    """clients ip adress"""
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if client_ip == '127.0.0.1':
-        client_ip = 'YOUR_PUBLIC_IP_FOR_TESTING'
+    # Get client IP address
+    client_ip = request.remote_addr
     
     # Get location and temperature based on IP
     location, temperature = get_location_and_temperature(client_ip)
@@ -30,15 +25,17 @@ def hello():
 def get_location_and_temperature(ip):
     # Use an IP geolocation API (like ipinfo.io)
     try:
-        ip_info_response = requests.get(f'https://ipinfo.io/{ip}?token={os.getenv("IPINFO_API_KEY")}')
+        ip_info_response = requests.get(f'https://ipinfo.io/{ip}?token=9be2f128220c66')
         ip_info = ip_info_response.json()
         location = ip_info.get('city', 'Unknown')
+        print(location)
         
         # Use a weather API to get the temperature (like OpenWeatherMap)
-        weather_api_key = os.getenv('OPENWEATHER_API_KEY')
+        weather_api_key = 'c1a78f129e8e837456d9d81cc364db09'
         weather_url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={weather_api_key}&units=metric'
         weather_info = requests.get(weather_url).json()
         print(weather_info)
+        
         if 'main' in weather_info:
             temperature = weather_info['main']['temp']
         else:
